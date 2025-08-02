@@ -23,7 +23,8 @@ public class LoginMenu {
 			System.out.println("3. Deposit");
 			System.out.println("4. Withdraw");
 			System.out.println("5. View Transaction");
-			System.out.println("6. Logout");
+			System.out.println("6. Edit Profile");
+			System.out.println("7. Logout");
 			int choice = 0;
 			while (true) {
 				System.out.print("Enter your choice : ");
@@ -63,6 +64,11 @@ public class LoginMenu {
 				break;
 
 			case 6:
+				EditProfile edit = new EditProfile(scanner);
+				edit.edit(accountNo);
+				break;
+
+			case 7:
 				check = 1;
 				break;
 
@@ -75,48 +81,42 @@ public class LoginMenu {
 	}
 
 	private void printTransaction(int accountNo) {
-	    String query = "SELECT * FROM transaction WHERE accountno = ? ORDER BY transaction_time DESC";
+		String query = "SELECT * FROM transaction WHERE accountno = ? ORDER BY transaction_time DESC";
 
-	    try (Connection conn = MyConnection.getConnection();
-	         PreparedStatement ps = conn.prepareStatement(query)) {
+		try (Connection conn = MyConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
 
-	        ps.setInt(1, accountNo);
-	        ResultSet rs = ps.executeQuery();
+			ps.setInt(1, accountNo);
+			ResultSet rs = ps.executeQuery();
 
-	        System.out.println("\n--- Transaction History for Account No: " + accountNo + " ---");
-	        System.out.printf("%-25s %-15s %-12s %-15s %-15s %-12s\n", 
-	                  "Time", "Type", "Amount", "FromAccount", "ToAccount", "Balance");
+			System.out.println("\n--- Transaction History for Account No: " + accountNo + " ---");
+			System.out.printf("%-25s %-15s %-12s %-15s %-15s %-12s\n", "Time", "Type", "Amount", "FromAccount",
+					"ToAccount", "Balance");
 
+			boolean hasData = false;
 
-	        boolean hasData = false;
+			while (rs.next()) {
+				hasData = true;
+				String time = rs.getTimestamp("transaction_time").toString();
+				String type = rs.getString("ttype");
+				double amount = rs.getDouble("amount");
+				String from = rs.getString("fromaccount");
+				String to = rs.getString("toaccount");
+				double balance = rs.getDouble("balance");
 
-	        while (rs.next()) {
-	            hasData = true;
-	            String time = rs.getTimestamp("transaction_time").toString();
-	            String type = rs.getString("ttype");
-	            double amount = rs.getDouble("amount");
-	            String from = rs.getString("fromaccount");
-	            String to = rs.getString("toaccount");
-	            double balance = rs.getDouble("balance");
+				System.out.printf("%-25s %-15s %-12.2f %-15s %-15s %-12.2f\n", time, type, amount,
+						from == null ? "-" : from, to == null ? "-" : to, balance);
 
-	            System.out.printf("%-25s %-15s %-12.2f %-15s %-15s %-12.2f\n",
-	                    time, type, amount,
-	                    from == null ? "-" : from,
-	                    to == null ? "-" : to,
-	                    balance);
+			}
 
-	        }
+			if (!hasData) {
+				System.out.println("No transactions found for this account.");
+			}
 
-	        if (!hasData) {
-	            System.out.println("No transactions found for this account.");
-	        }
-
-	    } catch (Exception e) {
-	        System.out.println("Error retrieving transaction history: " + e.getMessage());
-	        e.printStackTrace();
-	    }
+		} catch (Exception e) {
+			System.out.println("Error retrieving transaction history: " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
-
 
 	private void withdraw(int accountNo) throws ClassNotFoundException, SQLException {
 		double amount = 0;

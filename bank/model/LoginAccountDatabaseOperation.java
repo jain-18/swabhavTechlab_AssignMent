@@ -268,5 +268,104 @@ public class LoginAccountDatabaseOperation {
 	    }
 	}
 
+	public static void changeName(int accountNo, String name) {
+	    String query = "UPDATE account SET name = ? WHERE accountno = ?";
+
+	    try (Connection conn = MyConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(query)) {
+
+	        ps.setString(1, name);
+	        ps.setInt(2, accountNo);
+
+	        int rowsUpdated = ps.executeUpdate();
+
+	        if (rowsUpdated > 0) {
+	            System.out.println("Name updated successfully for account number " + accountNo + ".");
+	        } else {
+	            System.out.println("Account number " + accountNo + " not found.");
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("Error while updating name: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	}
+
+
+	public static int getOldPin(int accountNo) {
+	    String query = "SELECT pin FROM account WHERE accountno = ?";
+	    
+	    try (Connection conn = MyConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(query)) {
+
+	        ps.setInt(1, accountNo);
+	        ResultSet rs = ps.executeQuery();
+
+	        if (rs.next()) {
+	            return rs.getInt("pin");
+	        } else {
+	            System.out.println("Account number not found.");
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("Error retrieving PIN: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+
+	    return -1;  // return -1 if account not found or error occurred
+	}
+
+	public static void changePin(int accountNo, int pin) {
+	    String query = "UPDATE account SET pin = ? WHERE accountno = ?";
+
+	    try (Connection conn = MyConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(query)) {
+
+	        ps.setInt(1, pin);
+	        ps.setInt(2, accountNo);
+
+	        int rowsUpdated = ps.executeUpdate();
+
+	        if (rowsUpdated > 0) {
+	            System.out.println("PIN updated successfully for account number " + accountNo + ".");
+	        } else {
+	            System.out.println("Account number " + accountNo + " not found.");
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("Error while updating PIN: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	}
+
+	public static Account getProfile(int accountNo) {
+	    String query = "SELECT accountno, name, balance FROM account WHERE accountno = ?";
+	    Account account = null;
+
+	    try (Connection conn = MyConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(query)) {
+
+	        ps.setInt(1, accountNo);
+	        ResultSet rs = ps.executeQuery();
+
+	        if (rs.next()) {
+	            account = new Account();
+	            account.setAccountno(rs.getInt("accountno"));
+	            account.setName(rs.getString("name"));
+	            account.setBalance(rs.getDouble("balance"));
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("Error fetching account profile: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+
+	    return account;
+	}
+
+	
+
+
+
 
 }
